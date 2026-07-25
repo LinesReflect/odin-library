@@ -1,47 +1,91 @@
 const myLibrary = [];
-
 const books = document.querySelector(".books");
+const formDialog = document.getElementById("book-form-dialog");
+const showFormDialogBtn = document.getElementById("show-form-dialog-btn");
+const closeFormDialogBtn = document.getElementById("close-form-dialog-btn")
+const bookForm = document.getElementById("book-form");
+const formSubmitBtn = document.getElementById("form-submit-btn");
 
-function Book(title, author, pageCount, yearPublished, read) {
+function Book({title, author, pageCount, yearPublished, read}) {
+    this.id = crypto.randomUUID();
     this.title = title;
     this.author = author;
     this.pageCount = pageCount;
     this.yearPublished = yearPublished;
     this.read = read;
-    this.id = crypto.randomUUID;
 }
 
-function addBookToLibrary(title, author, read) {
-    const book = new Book(title, author, read);
-    if (book instanceof Book) {
-        myLibrary.push(book)
+function addBookToLibrary(book) {
+    const newBook = new Book(book);
+    if (newBook instanceof Book) {
+        myLibrary.push(newBook)
     }
+}
+
+function createNodes(key, value) {
+    const keyText = document.createElement("p");
+    keyText.textContent = `${key.charAt(0).toUpperCase() + key.slice(1)}:`;
+
+    const valueText = document.createElement("p");
+    valueText.textContent = value
+
+    const div = document.createElement("div");
+    div.classList.toggle("book-details")
+    div.append(keyText, valueText);
+
+    return div
 }
 
 function displayBooks() {
+    books.replaceChildren()
+
     for (const book of myLibrary) {
-        const node = document.createElement("div");
-        node.classList.toggle("book");
-        node.id = (`book-${book.id}`);
+        const listNode = document.createElement("li");
+        const bookContainerNode = document.createElement("div");
+        bookContainerNode.classList.toggle("book");
+        listNode.id = (`book-${book.id}`);
 
-        const bookTitle = document.createElement("p")
-        bookTitle.textContent = book.title
-        node.appendChild(bookTitle);
+        for (const [key, value] of Object.entries(book)) {
+            if (value !== book.id) {
+                const childNodes = createNodes(key, value)
+                bookContainerNode.appendChild(childNodes);
+            }
+        }
 
-        const bookAuthor = document.createElement("p")
-        bookAuthor.textContent = book.author
-        node.appendChild(bookAuthor);
-
-        const bookPageCount = document.createElement("p")
-        bookPageCOunt.textContent = book.pageCount
-        node.appendChild(bookPageCount);
-
-        const bookYearPublished = document.createElement("p")
-        bookYearPublished.textContent = book.yearPublished
-        node.appendChild(bookYearPublished);
-
-        const bookRead = document.createElement("p")
-        bookRead.textContent = book.read
-        node.appendChild(bookRead);
+        listNode.appendChild(bookContainerNode)
+        books.appendChild(listNode)
     }
 }
+
+showFormDialogBtn.addEventListener("click", () => {
+    formDialog.showModal();
+})
+
+closeFormDialogBtn.addEventListener("click", () => {
+    formDialog.close()
+})
+
+function buildBook(formData) {
+    const book = {
+        title: formData.get("title"),
+        author: formData.get("author"),
+        pageCount: formData.get("page-count"),
+        yearPublished: formData.get("year-published"),
+        read: formData.get("read")
+    }
+
+    addBookToLibrary(book)
+
+    
+}
+
+bookForm.addEventListener("submit", (e) => {
+    const bookFormData = new FormData(bookForm, formSubmitBtn);
+    if (e.submitter === formSubmitBtn) {
+        e.preventDefault()
+        buildBook(bookFormData);
+        formDialog.close()
+        bookForm.reset()
+        displayBooks()
+    }
+})
