@@ -1,5 +1,5 @@
 const myLibrary = [];
-const books = document.querySelector(".books");
+const bookList = document.querySelector(".books");
 const formDialog = document.getElementById("book-form-dialog");
 const showFormDialogBtn = document.getElementById("show-form-dialog-btn");
 const closeFormDialogBtn = document.getElementById("close-form-dialog-btn")
@@ -37,7 +37,7 @@ function createNodes(key, value) {
 }
 
 function displayBooks() {
-    books.replaceChildren()
+    bookList.replaceChildren()
 
     for (const book of myLibrary) {
         const listNode = document.createElement("li");
@@ -52,9 +52,22 @@ function displayBooks() {
             }
         }
 
+        const deleteBtn = createDeleteBtn(book.id)
+
+        bookContainerNode.appendChild(deleteBtn)
+
         listNode.appendChild(bookContainerNode)
-        books.appendChild(listNode)
+        bookList.appendChild(listNode)
     }
+}
+
+function createDeleteBtn(bookId) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.textContent = "Delete from Library";
+        deleteBtn.dataset.bookId = bookId
+        deleteBtn.classList.toggle("delete-btn");
+
+        return deleteBtn;
 }
 
 showFormDialogBtn.addEventListener("click", () => {
@@ -88,4 +101,21 @@ bookForm.addEventListener("submit", (e) => {
         bookForm.reset()
         displayBooks()
     }
+})
+
+function deleteBook(targetBook) {
+    const index = myLibrary.indexOf(targetBook)
+
+    if (index > -1) {
+        myLibrary.splice(index, 1);
+    }
+}
+
+bookList.addEventListener("click", (e) => {
+    if (e.target.classList.contains("delete-btn")) {
+        const deleteBtn = e.target
+        const book = myLibrary.find((b) => b.id === deleteBtn.dataset.bookId)
+        deleteBook(book)
+        displayBooks()
+    }   
 })
